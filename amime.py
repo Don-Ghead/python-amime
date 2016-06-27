@@ -5,6 +5,13 @@ import argparse
 import email
 from os.path import isfile
 import hashlib
+__has_ssdeep = False
+
+try:
+    import ssdeep
+    __has_ssdeep = True
+except:
+    print ' Warning ssdeep import failed!'
 
 __version__ = '0.0.1'
 __author__ = 'Sean Wilson'
@@ -15,6 +22,9 @@ Changelog
 
 0.0.1
  - Initial Release
+0.0.2
+ - Minor updates to output
+ - Updated script to include ssdeep hash
 
 ----------------------------------------
 Copyright (c) 2016 Sean Wilson - PhishMe
@@ -76,7 +86,9 @@ class ActiveMimeDoc(object):
         self.size = 0
         self.compressed_data = None
         self.data = None
+        self.is_ole_doc = False
         self._parsedoc()
+
 
 
     def _parsedoc(self):
@@ -122,7 +134,8 @@ class ActiveMimeDoc(object):
         self.compressed_data = self.rawdoc[cursor:]
         self.data = zlib.decompress(self.compressed_data)
 
-
+        if self.data[0:4].encode('hex') == 'd0cf11e0':
+            self.is_ole_doc = True
 
     def __str__(self):
         str = "ActiveMime Document Size: %d\n" % len(self.rawdoc)
@@ -237,20 +250,30 @@ def main():
             amd = process(args.file, False)
 
         if amd:
-            print '------------------------------------------------------'
-            print ' Document Size:     %d' % len(amd.rawdoc)
-            print ' Compressed Size:   %d' % amd.compressed_size
-            print ' Uncompressed Size: %d' % amd.size
-            print ' Document MD5 Hash: %s' % hashlib.md5(amd.rawdoc).hexdigest()
-            print ' Data MD5 Hash:     %s' % hashlib.md5(amd.data).hexdigest()
-            print ' Has VBA Tail data: %s' % amd.has_vba_tail
-            print '------------------------------------------------------'
+            print ' ------------------------------------------------------'
+            print '  ActiveMime Document'
+            print '   - {:18}{}'.format('Size:', len(amd.rawdoc))
+            print '   - {:18}{}'.format('Hash:', hashlib.sha1(amd.rawdoc).hexdigest())
+
+            if __has_ssdeep:
+                print '   - {:18}{}'.format('ssdeep:', ssdeep.hash(amd.rawdoc))
+
+            print '  Payload Data'
+            print '   - {:18}{}'.format('Compressed Size:',amd.compressed_size)
+            print '   - {:18}{}'.format('Size:', amd.size)
+            print '   - {:18}{}'.format('Hash:', hashlib.sha1(amd.data).hexdigest())
+
+            if __has_ssdeep:
+                print '   - {:18}{}'.format('Data ssdeep:', ssdeep.hash(amd.data))
+
+            print '   - {:18}{}'.format('VBA Tail:', amd.has_vba_tail)
+            print '   - {:18}{}'.format('OLE Doc:', amd.is_ole_doc)
+            print ' ------------------------------------------------------'
 
             if args.extract:
                 print ' [*] Writing decoded Project file'
                 with open(hashlib.md5(amd.data).hexdigest(), 'wb') as out:
                     out.write(amd.data)
-
         return 0
 
     else:
