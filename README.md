@@ -27,7 +27,7 @@ _If you have additional details, want to collaborate or corrections about the fo
     26:30    xxxxxxxx                  |  4   |  Length of zlib compressed data
     30:34    04000000                  |  4   |  FieldSize  -- Observed as 4 or 8..almost always 4
     34:38    04000000                  |  4   |  FieldSize  -- Always observed as 04000000
-    38:xx    00000000                  |  4|8 |  00000000          With size (4)
+    38:xx    00000000                  |  4|8 |  00000000          With size (4) 
                                        |      |  00000000 10000000 With Size (8)
     xx:xx    0{x}000000                |  4   |  Seems to indicate if the block includes unencoded vb strings at the end.
                                        |      |  00000000 - Block contains some unencded VB Project Strings
@@ -36,6 +36,11 @@ _If you have additional details, want to collaborate or corrections about the fo
     xx:xx    xxxxxxxx                  |  4   |  Uncompressed Size
     xx:xx    789ced7d                  | Var  |  Compressed data
 ```
+
+For bytes 38:xx, while not conclusive, in the event the file has been digitally signed with a certificate 
+the bytes indicate an offset to the start of the data relative to the current position. If there is no Digital 
+Signature then the field remains 0. This information comes from a number of signed VBA macro projects embedded 
+in Microsoft XML 1.0 Documents. 
 
 ## Usage
 
