@@ -38,7 +38,7 @@ _If you have additional details, want to collaborate or corrections about the fo
 ```
 
 For bytes 38:xx, while not conclusive, in the event the file has been digitally signed with a certificate 
-the bytes indicate an offset to the start of the data relative to the current position. If there is no Digital 
+the bytes indicate an offset to the start of the data relative to the end of the activemime header. If there is no Digital 
 Signature then the field remains 0. This information comes from a number of signed VBA macro projects embedded 
 in Microsoft XML 1.0 Documents. 
 
